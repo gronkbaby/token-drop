@@ -6,11 +6,12 @@ import "../styles/globals.css";
 import { AppProps } from "next/app";
 
 // This is the chainId your dApp will work on.
-const activeChainId = ChainId.Mumbai;
+const activeChainId = ChainId.Ethereum;
+const tokenAddress = "0x8494E2E992a0669B86174d79B98750F7827bA4F3";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <ThirdwebProvider desiredChainId={activeChainId}>
+    <ThirdwebProvider desiredChainId={activeChainId} tokenAddress={tokenAddress}>
       <Head>
         <title>thirdweb Token Drop Example</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
