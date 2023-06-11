@@ -1,6 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
-import { BigNumber, ethers, utils } from "ethers";
-import Image from "next/image";
 import {
   useActiveClaimConditionForWallet,
   useAddress,
@@ -12,14 +9,15 @@ import {
   useTokenSupply,
   Web3Button,
 } from "@thirdweb-dev/react";
-import { parseIneligibility } from "../utils/parseIneligibility";
+import { BigNumber, utils } from "ethers";
+import Image from "next/image";
+import { useMemo, useState } from "react";
 import styles from "../styles/Home.module.css";
+import { parseIneligibility } from "../utils/parseIneligibility";
 
 const Home = () => {
   const tokenAddress = "0x8494E2E992a0669B86174d79B98750F7827bA4F3";
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const signer = provider.getSigner();
-  const { contract } = useContract(tokenAddress, "token-drop", signer);
+  const { contract } = useContract(tokenAddress, "token-drop");
   const address = useAddress();
   const [quantity, setQuantity] = useState(1);
   const { data: contractMetadata } = useContractMetadata(contract);
@@ -99,23 +97,88 @@ const Home = () => {
       bnMaxClaimable = perTransactionClaimable;
     }
 
-    // Rest of the code...
+    const snapshotClaimable = claimConditions
+      .map((cc) => cc.snapshot)
+      .reduce((a, b) => (a >= b ? a : b), 0);
 
-    return (
-      <div>
-        <p>Total available supply: {totalAvailableSupply.toString()}</p>
-        <p>Number claimed: {numberClaimed}</p>
-        <p>Number total: {numberTotal}</p>
-        <p>Price to mint: {priceToMint}</p>
-        {/* ... */}
-      </div>
-    );
-  };
+    if (snapshotClaimable) {
+      bnMaxClaimable = bnMaxClaimable.sub(snapshotClaimable);
+    }
+
+    return bnMaxClaimable;
+  }, [
+    activeClaimCondition.data?.maxClaimablePerWallet,
+    activeClaimCondition.data?.maxClaimableSupply,
+    claimConditions,
+  ]);
+
+  const isClaimEligible =
+    claimIneligibilityReasons.length === 0 &&
+    quantity <= maxClaimable.toNumber();
 
   return (
-    <div>
-      {/* ... */}
-      {maxClaimable}
+    <div className={styles.container}>
+      <main className={styles.main}>
+        <h1 className={styles.title}>{contractMetadata?.name}</h1>
+        <p className={styles.description}>
+          {contractMetadata?.description}
+        </p>
+        <div className={styles.grid}>
+          <div className={styles.card}>
+            <h3>Claimable Supply</h3>
+            <p>
+              {numberClaimed}/{numberTotal}
+            </p>
+          </div>
+          <div className={styles.card}>
+            <h3>Claim Conditions</h3>
+            <ul>
+              {claimConditions.map((claimCondition) => (
+                <li key={claimCondition.name}>{claimCondition.name}</li>
+              ))}
+            </ul>
+          </div>
+          <div className={styles.card}>
+            <h3>Claim Ineligibility Reasons</h3>
+            <ul>
+              {claimIneligibilityReasons.map((reason) => (
+                <li key={reason}>{parseIneligibility(reason)}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className={styles.controls}>
+          <label htmlFor="quantity">Quantity:</label>
+          <input
+            type="number"
+            id="quantity"
+            name="quantity"
+            min="1"
+            max={maxClaimable.toString()}
+            value={quantity}
+            onChange={(e) => setQuantity(parseInt(e.target.value))}
+          />
+          <p>
+            Price to mint: <strong>{priceToMint}</strong>
+          </p>
+          <Web3Button
+            contract={contract}
+            method="claim"
+            args={[quantity]}
+            disabled={!isClaimEligible}
+          >
+            Claim
+          </Web3Button>
+        </div>
+        <div className={styles.footer}>
+          <Image
+            src="/thirdweb-logo.svg"
+            alt="Thirdweb Logo"
+            width={100}
+            height={32}
+          />
+        </div>
+      </main>
     </div>
   );
 };
