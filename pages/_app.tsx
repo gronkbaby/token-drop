@@ -9,9 +9,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <Web3Provider
       library={new ethers.providers.Web3Provider(window.ethereum)}
-      options={{
-        chainId: activeChainId,
-      }}
+      chainId={activeChainId}
     >
       <Component {...pageProps} />
     </Web3Provider>
@@ -19,4 +17,3 @@ function MyApp({ Component, pageProps }: AppProps) {
 }
 
 export default MyApp;
-
