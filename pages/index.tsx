@@ -1,3 +1,6 @@
+import { useEffect, useMemo, useState } from "react";
+import { BigNumber, ethers, utils } from "ethers";
+import Image from "next/image";
 import {
   useActiveClaimConditionForWallet,
   useAddress,
@@ -9,15 +12,14 @@ import {
   useTokenSupply,
   Web3Button,
 } from "@thirdweb-dev/react";
-import { BigNumber, utils } from "ethers";
-import Image from "next/image";
-import { useMemo, useState } from "react";
-import styles from "../styles/Home.module.css";
 import { parseIneligibility } from "../utils/parseIneligibility";
+import styles from "../styles/Home.module.css";
 
 const Home = () => {
   const tokenAddress = "0x8494E2E992a0669B86174d79B98750F7827bA4F3";
-  const { contract } = useContract(tokenAddress, "token-drop");
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = provider.getSigner();
+  const { contract } = useContract(tokenAddress, "token-drop", signer);
   const address = useAddress();
   const [quantity, setQuantity] = useState(1);
   const { data: contractMetadata } = useContractMetadata(contract);
@@ -97,4 +99,25 @@ const Home = () => {
       bnMaxClaimable = perTransactionClaimable;
     }
 
-    const snapshotClaimable = claim
+    // Rest of the code...
+
+    return (
+      <div>
+        <p>Total available supply: {totalAvailableSupply.toString()}</p>
+        <p>Number claimed: {numberClaimed}</p>
+        <p>Number total: {numberTotal}</p>
+        <p>Price to mint: {priceToMint}</p>
+        {/* ... */}
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      {/* ... */}
+      {maxClaimable}
+    </div>
+  );
+};
+
+export default Home;
