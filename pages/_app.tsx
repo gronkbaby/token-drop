@@ -1,6 +1,5 @@
 import { AppProps } from "next/app";
-import { Web3Provider } from "@ethersproject/providers";
-import { ethers } from "ethers";
+import { Web3Provider } from "ethers";
 import { ChainId } from "@uniswap/sdk";
 
 const activeChainId = ChainId.MAINNET; // Set the Ethereum chain ID here
@@ -17,3 +16,4 @@ function MyApp({ Component, pageProps }: AppProps) {
 }
 
 export default MyApp;
+
